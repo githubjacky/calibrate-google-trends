@@ -17,7 +17,7 @@ class BaseTrendSearch:
         self.geo = geo
         self.period = period
         self.bad_keywords = []
-        self.prefix = ""
+        self.suffix = ""
 
 
     def setup(self, init_path: str = "gtab_config"):
@@ -48,7 +48,12 @@ class BaseTrendSearch:
         self.t = t
 
 
-    def calibrate_instance(self, keyword: str, collection: Collection):
+    def calibrate_instance(self, keyword: str, collection: Collection) -> None:
+        """Query the trends of the keyword.
+
+        Note: store the data only if the data doesn't exist in the specified
+        collection under specified mongodb database.
+        """
         res = self.t.new_query(keyword)
         match res:
             case DataFrame():
@@ -56,22 +61,28 @@ class BaseTrendSearch:
 
                 for i in range(len(res)):
                     date = res.index[i]
-                    collection.insert_one({
+                    item  = {
                         'year': date.date().year,
                         'month': date.date().month,
                         'name': keyword.split(' "')[0],
-                        'prefix': self.prefix,
-                        'max_ratio': res.at[date, 'max_ratio'],
-                        'max_ratio_hi': res.at[date, 'max_ratio_hi'],
-                        'max_ratio_lo': res.at[date, 'max_ratio_lo']
-                    })
+                        'suffix': self.suffix,
+                    }
+
+                    if collection.count_documents(item) == 0:
+                        item['max_ratio'] = res.at[date, 'max_ratio']
+                        item['max_ratio_hi'] = res.at[date, 'max_ratio_hi']
+                        item['max_ratio_lo'] = res.at[date, 'max_ratio_lo']
+                        collection.insert_one(item)
+
             case int():
                 logger.info(f'bad query: {keyword}')
                 self.bad_keywords.append(keyword)
 
 
     def __continuous_calibrate(self, collection: Collection, max_retry: int = 5) -> None:
-        """Calibrate until all the bad keyword list is empty."""
+        """Calibrate until all the bad keyword list is empty or the number of
+        retries exceed the `max_retry`.
+        """
 
         retry = 0
         while len(self.bad_keywords) != 0 and retry < max_retry:
@@ -82,7 +93,8 @@ class BaseTrendSearch:
                 self.calibrate_instance(keyword, collection)
             retry += 1
 
-        print(f'bad keywords: {self.bad_keywords}')
+        if len(self.bad_keywords) != 0:
+            print(f'bad keywords: {self.bad_keywords}')
 
 
     def calibrate_batch(self,
