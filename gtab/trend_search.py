@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from pandas import DataFrame
 from pymongo import MongoClient
-from pymongo.collection import Collection
 from typing import List, Literal
 from tqdm import tqdm
 
@@ -48,7 +47,7 @@ class BaseTrendSearch:
         self.t = t
 
 
-    def calibrate_instance(self, keyword: str, collection: Collection) -> None:
+    def calibrate_instance(self, keyword: str) -> None:
         """Query the trends of the keyword.
 
         Note: store the data only if the data doesn't exist in the specified
@@ -68,18 +67,18 @@ class BaseTrendSearch:
                         'suffix': self.suffix,
                     }
 
-                    if collection.count_documents(item) == 0:
+                    if self.collection.count_documents(item) == 0:
                         item['max_ratio'] = res.at[date, 'max_ratio']
                         item['max_ratio_hi'] = res.at[date, 'max_ratio_hi']
                         item['max_ratio_lo'] = res.at[date, 'max_ratio_lo']
-                        collection.insert_one(item)
+                        self.collection.insert_one(item)
 
             case int():
                 logger.info(f'bad query: {keyword}')
                 self.bad_keywords.append(keyword)
 
 
-    def __continuous_calibrate(self, collection: Collection, max_retry: int = 5) -> None:
+    def __continuous_calibrate(self, max_retry: int = 5) -> None:
         """Calibrate until all the bad keyword list is empty or the number of
         retries exceed the `max_retry`.
         """
@@ -89,8 +88,8 @@ class BaseTrendSearch:
             keywords = self.bad_keywords.copy()
             self.bad_keywords = []
 
-            for keyword in tqdm(keywords, desc=f'calibrate bad keywods, {i+1}th round'):
-                self.calibrate_instance(keyword, collection)
+            for keyword in tqdm(keywords, desc=f'calibrate bad keywods, {retry+1}th round'):
+                self.calibrate_instance(keyword, self.collection)
             retry += 1
 
         if len(self.bad_keywords) != 0:
@@ -108,10 +107,10 @@ class BaseTrendSearch:
 
         client = MongoClient(os.environ['CONN_STR'])
         db = client[db_name]
-        collection = db[collection_name]
+        self.collection = db[collection_name]
 
         for keyword in keywords:
-            self.calibrate_instance(keyword, collection)
+            self.calibrate_instance(keyword)
 
         if continuous_mode:
-            self.__continuous_calibrate(collection, max_retry)
+            self.__continuous_calibrate(max_retry)
