@@ -26,3 +26,18 @@ make doc
 # development IDE - Jupyter Lab
 make jupyter
 ```
+
+
+## Usage
+1. download the [MongoDB](https://www.mongodb.com/try/download/community) and start the server
+2. modify the `.env.example`, assigning the environment variables and rename it as `.env`
+3. modify the configuration file - `config/main.yaml`
+4. run the program
+```sh
+# Note: the log file will be stored under `log/{db_name}/{collection_name}`
+make up
+```
+5. stop the container
+```sh
+make down
+```
