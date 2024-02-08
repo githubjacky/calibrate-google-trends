@@ -1,3 +1,5 @@
+import datetime
+from functools import cached_property
 from loguru import logger
 import os
 from pathlib import Path
@@ -17,6 +19,40 @@ class BaseTrendSearch:
         self.period = period
         self.bad_keywords = []
         self.suffix = ""
+
+
+    @cached_property
+    def __begin_date(self) -> datetime.date:
+        return datetime.datetime.strptime(
+            self.period[0], '%Y-%m-%d'
+        ).date()
+
+
+    @cached_property
+    def __end_date(self) -> datetime.date:
+        return datetime.datetime.strptime(
+            self.period[1], '%Y-%m-%d'
+        ).date()
+
+
+    @property
+    def __begin_year(self) -> int:
+        return self.__begin_date.year
+
+
+    @property
+    def __begin_month(self) -> int:
+        return self.__begin_date.month
+
+
+    @property
+    def __end_year(self):
+        return self.__end_date.year
+
+
+    @property
+    def __end_month(self):
+        return self.__end_date.month
 
 
     def setup(self, init_path: str = "gtab_config"):
@@ -102,6 +138,19 @@ class BaseTrendSearch:
                         collection_name: str,
                         continuous_mode: Literal[True, False] = True,
                         max_retry: int = 5):
+        """Main function, calibrating batch of keywords.
+
+        Args:
+            `keywords`:         list of keywords to calibrate(query)
+            `db_name`:          name of the database
+            `collection_name`:  name of the collection
+            `continuous_mode`:  whether to keep calibrate bad keywods which
+                fail to calibrate.
+            `max_retry`:        maximum round of tries to calibrate bad keywords
+
+        Returns:
+            None, the data is stored in mongodb
+        """
         logger.remove()
         logger.add(f'log/{db_name}/{collection_name}.log')
 
