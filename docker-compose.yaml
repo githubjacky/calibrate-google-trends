@@ -1,5 +1,17 @@
 version: '3.8'
 services:
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    # ports:
+    #   - "27017:27017"
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=$MONGODB_USER
+      - MONGODB_INITDB_ROOT_PASSWORD=$MONGODB_PASS
+    volumes:
+      - $PWD/data/db:/data/db
+
+
   calibrate-google-trends:
     image: 0jacky/$PROJ:latest
     container_name: calibrate-google-trends
@@ -10,11 +22,18 @@ services:
         GID: $GID
         USER: $DOCKER_USER
         PROJ: $PROJ
+    depends_on: 
+      - mongodb
+    environment:
+      - CONN_STR=$CONN_STR
     volumes:
       - $PWD/config:/home/$DOCKER_USER/$PROJ/config
       - $PWD/log:/home/$DOCKER_USER/$PROJ/log
       - $PWD/data:/home/$DOCKER_USER/$PROJ/data
       - $PWD/gtab:/home/$DOCKER_USER/$PROJ/gtab
+      - $PWD/gtab_config:/home/$DOCKER_USER/$PROJ/gtab_config
+      - $PWD/scripts:/home/$DOCKER_USER/$PROJ/scripts
+    command: python scripts/run.py
 
 
   pytest:
@@ -26,6 +45,7 @@ services:
       - $PWD/log:/home/$DOCKER_USER/$PROJ/log
       - $PWD/data:/home/$DOCKER_USER/$PROJ/data
       - $PWD/gtab:/home/$DOCKER_USER/$PROJ/gtab
+      - $PWD/gtab_config:/home/$DOCKER_USER/$PROJ/gtab_config
       - $PWD/tests:/home/$DOCKER_USER/$PROJ/tests
     command: pytest
 
@@ -51,6 +71,11 @@ services:
       - $PWD/log:/home/$DOCKER_USER/$PROJ/log
       - $PWD/data:/home/$DOCKER_USER/$PROJ/data
       - $PWD/gtab:/home/$DOCKER_USER/$PROJ/gtab
+      - $PWD/gtab_config:/home/$DOCKER_USER/$PROJ/gtab_config
       - $PWD/examples:/home/$DOCKER_USER/$PROJ/examples
       - $PWD/scripts:/home/$DOCKER_USER/$PROJ/scripts
+    depends_on:
+      - mongodb
+    environment:
+      - CONN_STR=$CONN_STR
     command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root

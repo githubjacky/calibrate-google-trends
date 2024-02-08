@@ -1,1 +1,1 @@
-from .core import GTAB
+from .trend_search import BaseTrendSearch

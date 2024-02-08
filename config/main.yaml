@@ -3,11 +3,20 @@ hydra:
   run:
     dir: .
 
+
 defaults:
   # - process: process1
   # - model: model1
   - _self_
 
-data_dir:
-  raw: data/raw
-  processed: data/processed
+
+suffix:
+geo:
+period:
+  - 2016-06-01
+  - 2018-12-31
+init_path: gtab_config
+db_name: test
+collection_name: test
+continuous_mode: True
+max_retry: 5

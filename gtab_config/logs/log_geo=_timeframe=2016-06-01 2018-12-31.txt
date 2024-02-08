@@ -3462,3 +3462,8 @@ Keyword Naomi R. Shatz is bad!
 Using gtab_config/output/google_anchorbanks/google_anchorbank_geo=_timeframe=2016-06-01 2018-12-31.tsv
 New query 'Alec Klein'
 New query calibrated!
+
+2024-02-08 10:22:28.183118
+Using gtab_config/output/google_anchorbanks/google_anchorbank_geo=_timeframe=2016-06-01 2018-12-31.tsv
+New query 'Barack Obama'
+New query calibrated!

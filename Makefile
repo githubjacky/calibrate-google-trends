@@ -17,7 +17,7 @@ build:
 
 
 up:
-	docker compose up
+	docker compose run --rm calibrate-google-trends
 
 
 down:
