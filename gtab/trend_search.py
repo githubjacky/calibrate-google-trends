@@ -17,6 +17,8 @@ class BaseTrendSearch:
         self.period = period
         self.bad_keywords = []
         self.suffix = ""
+        self.client = MongoClient(os.environ['CONN_STR'])
+        self.collection = None
 
 
     def setup(self, init_path: str = "gtab_config"):
@@ -89,7 +91,7 @@ class BaseTrendSearch:
             self.bad_keywords = []
 
             for keyword in tqdm(keywords, desc=f'calibrate bad keywods, {retry+1}th round'):
-                self.calibrate_instance(keyword, self.collection)
+                self.calibrate_instance(keyword)
             retry += 1
 
         if len(self.bad_keywords) != 0:
@@ -118,9 +120,7 @@ class BaseTrendSearch:
         logger.remove()
         logger.add(f'log/{db_name}/{collection_name}.log')
 
-        client = MongoClient(os.environ['CONN_STR'])
-        db = client[db_name]
-        self.collection = db[collection_name]
+        self.collection = self.client[db_name][collection_name]
 
         for keyword in tqdm(keywords):
             self.calibrate_instance(keyword)
