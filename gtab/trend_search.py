@@ -36,22 +36,22 @@ class BaseTrendSearch:
 
 
     @property
-    def __begin_year(self) -> int:
+    def _begin_year(self) -> int:
         return self.__begin_date.year
 
 
     @property
-    def __begin_month(self) -> int:
+    def _begin_month(self) -> int:
         return self.__begin_date.month
 
 
     @property
-    def __end_year(self):
+    def _end_year(self):
         return self.__end_date.year
 
 
     @property
-    def __end_month(self):
+    def _end_month(self):
         return self.__end_date.month
 
 
