@@ -1,5 +1,3 @@
-import datetime
-from functools import cached_property
 from loguru import logger
 import os
 from pathlib import Path
@@ -19,40 +17,6 @@ class BaseTrendSearch:
         self.period = period
         self.bad_keywords = []
         self.suffix = ""
-
-
-    @cached_property
-    def __begin_date(self) -> datetime.date:
-        return datetime.datetime.strptime(
-            self.period[0], '%Y-%m-%d'
-        ).date()
-
-
-    @cached_property
-    def __end_date(self) -> datetime.date:
-        return datetime.datetime.strptime(
-            self.period[1], '%Y-%m-%d'
-        ).date()
-
-
-    @property
-    def _begin_year(self) -> int:
-        return self.__begin_date.year
-
-
-    @property
-    def _begin_month(self) -> int:
-        return self.__begin_date.month
-
-
-    @property
-    def _end_year(self):
-        return self.__end_date.year
-
-
-    @property
-    def _end_month(self):
-        return self.__end_date.month
 
 
     def setup(self, init_path: str = "gtab_config"):
