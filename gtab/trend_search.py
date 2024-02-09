@@ -158,7 +158,7 @@ class BaseTrendSearch:
         db = client[db_name]
         self.collection = db[collection_name]
 
-        for keyword in keywords:
+        for keyword in tqdm(keywords):
             self.calibrate_instance(keyword)
 
         if continuous_mode:
